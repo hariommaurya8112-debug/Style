@@ -43,7 +43,6 @@ export default function App() {
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const audioInputRef = useRef(null);
-  const clipboardRef = useRef(null);
 
   const [activeTool, setActiveTool] = useState("project");
   const [studioMode, setStudioMode] = useState("graphic"); // "graphic" or "video"
@@ -77,7 +76,6 @@ export default function App() {
     stroke: "", strokeWidth: 0, textContent: ""
   });
 
-  const [drawProps, setDrawProps] = useState({ color: "#111111", size: 5, type: 'pencil' });
   const [qrText, setQrText] = useState("https://github.com");
 
   const showMsg = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2200); };
@@ -88,7 +86,7 @@ export default function App() {
     const containerHeight = canvasContainerRef.current.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) return;
 
-    const padding = 30;
+    const padding = 40;
     const scale = Math.min((containerWidth - padding) / canvasSize.w, (containerHeight - padding) / canvasSize.h, 1);
     
     const wrap = document.querySelector('.canvas-shadow-wrapper');
@@ -325,11 +323,9 @@ export default function App() {
     }
   };
 
-  // Top Control Deck Component
   const TopControlPanel = () => {
     return (
       <div className="top-multi-bar">
-        {/* ROW 1: Master Controls */}
         <div className="top-toolbar-row">
           <div className="tb-section-group">
             <button className="tb-btn" onClick={undo} disabled={historyIndex <= 0} title="Undo"><Undo2 size={15}/> Undo</button>
@@ -366,7 +362,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ROW 2: Contextual Tools Panel */}
         <div className="top-toolbar-row secondary-row custom-scrollbar">
           {activeTool === "project" && (
             <>
@@ -507,7 +502,6 @@ export default function App() {
       <style>{CSS}</style>
       <div className="app-container">
         
-        {/* TOP BRAND HEADER */}
         <header className="top-nav">
           <div className="logo">
             <div className="logo-icon">C</div>
@@ -518,11 +512,9 @@ export default function App() {
           </div>
         </header>
 
-        {/* TOP CONTROL DECK */}
         <TopControlPanel />
 
         <div className="main-body">
-          {/* PRIMARY TOOLBAR: 20 Tools arranged in 10-Row x 2-Column Grid */}
           <aside className="primary-toolbar custom-scrollbar">
             {TOOLS.map(t => (
               <button key={t.id} className={`sidebar-btn ${activeTool === t.id ? 'active' : ''}`} onClick={() => {
@@ -535,7 +527,6 @@ export default function App() {
             ))}
           </aside>
 
-          {/* MAIN WORKSPACE CANVAS CONTAINER */}
           <section className="workspace-container">
             <div className="canvas-scroll-area" ref={canvasContainerRef}>
               <div className="canvas-shadow-wrapper">
@@ -543,7 +534,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* VIDEO TIMELINE DOCK (Auto-rendered in video mode) */}
             {studioMode === 'video' && (
               <div className="video-timeline-dock">
                 <div className="timeline-toolbar-header">
@@ -598,7 +588,7 @@ export default function App() {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden; width: 100vw; height: 100vh; }
+html, body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden; width: 100vw; height: 100vh; position: fixed; }
 button, select, input { font-family: inherit; }
 button { border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
@@ -612,7 +602,6 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
 .logo-text { font-size: 15px; font-weight: 700; color: #fff;}
 .workspace-status { font-size: 12px; color: #94a3b8; }
 
-/* DUAL-ROW TOP CONTROLS */
 .top-multi-bar { display: flex; flex-direction: column; background: #fff; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; z-index: 45; }
 .top-toolbar-row { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #f1f5f9; gap: 10px; }
 .top-toolbar-row.secondary-row { background: #f8fafc; overflow-x: auto; white-space: nowrap; justify-content: flex-start; }
@@ -642,7 +631,6 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
 
 .main-body { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; }
 
-/* PRIMARY TOOLBAR: 20 Tools arranged precisely in 10 rows x 2 columns on desktop */
 .primary-toolbar { 
   width: 140px; 
   background: #fff; 
@@ -674,11 +662,10 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
 .sidebar-btn.active { background: #eef2ff; color: #5c4dff; border-color: #c7d2fe; }
 .tool-label { margin-top: 2px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-.workspace-container { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; position: relative; }
+.workspace-container { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; position: relative; min-width: 0; }
 .canvas-scroll-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; width: 100%; height: 100%; }
 .canvas-shadow-wrapper { background: #000; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center;}
 
-/* PRO VIDEO EDITING TIMELINE PANEL */
 .video-timeline-dock {
   height: 150px;
   background: #1e293b;
@@ -755,7 +742,6 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
 
 .toast-msg { position: fixed; bottom: 170px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
 
-/* RESPONSIVE MOBILE ADAPTATION */
 @media (max-width: 900px) {
   .app-container { height: 100vh; overflow: hidden; }
   .main-body { flex-direction: column; height: calc(100vh - 48px - 88px); }
