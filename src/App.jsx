@@ -86,11 +86,13 @@ export default function App() {
     const containerHeight = canvasContainerRef.current.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) return;
 
-    const padding = 40;
+    const padding = 30;
     const scale = Math.min((containerWidth - padding) / canvasSize.w, (containerHeight - padding) / canvasSize.h, 1);
     
     const wrap = document.querySelector('.canvas-shadow-wrapper');
     if (wrap) {
+      wrap.style.width = `${canvasSize.w}px`;
+      wrap.style.height = `${canvasSize.h}px`;
       wrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
     }
     canvasRef.current.calcOffset();
@@ -341,13 +343,13 @@ export default function App() {
               <button className={`mode-btn ${studioMode === 'graphic' ? 'active' : ''}`} onClick={() => {
                 setStudioMode('graphic');
                 setCanvasSize({ w: 1080, h: 1080 });
-                canvasRef.current.setDimensions({ width: 1080, height: 1080 });
+                if (canvasRef.current) canvasRef.current.setDimensions({ width: 1080, height: 1080 });
                 showMsg("Graphic Design Mode");
               }}><ImgIcon size={14}/> Graphic</button>
               <button className={`mode-btn ${studioMode === 'video' ? 'active' : ''}`} onClick={() => {
                 setStudioMode('video');
                 setCanvasSize({ w: 1280, h: 720 });
-                canvasRef.current.setDimensions({ width: 1280, height: 720 });
+                if (canvasRef.current) canvasRef.current.setDimensions({ width: 1280, height: 720 });
                 showMsg("Video Editing Mode");
               }}><Film size={14}/> Video</button>
             </div>
@@ -365,7 +367,7 @@ export default function App() {
         <div className="top-toolbar-row secondary-row custom-scrollbar">
           {activeTool === "project" && (
             <>
-              <button className="tb-btn primary" onClick={() => { setCanvasSize({w: 1200, h: 630}); canvasRef.current.setDimensions({width: 1200, height: 630}); showMsg("Resized to Social Banner"); }}><Maximize size={15}/> Social Banner (1200x630)</button>
+              <button className="tb-btn primary" onClick={() => { setCanvasSize({w: 1200, h: 630}); if(canvasRef.current) canvasRef.current.setDimensions({width: 1200, height: 630}); showMsg("Resized to Social Banner"); }}><Maximize size={15}/> Social Banner (1200x630)</button>
               <button className="tb-btn" onClick={() => setShowGrid(!showGrid)}><Grid size={15}/> {showGrid ? 'Hide Grid' : 'Show Grid'}</button>
               <button className="tb-btn danger-text" onClick={() => { canvasRef.current.clear(); canvasRef.current.backgroundColor = canvasBg; saveHistory(); showMsg("Canvas Cleared"); }}><Trash2 size={15}/> Clear Canvas</button>
             </>
@@ -663,8 +665,9 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
 .tool-label { margin-top: 2px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 .workspace-container { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; position: relative; min-width: 0; }
-.canvas-scroll-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; width: 100%; height: 100%; }
-.canvas-shadow-wrapper { background: #000; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center;}
+.canvas-scroll-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; }
+.canvas-shadow-wrapper { background: #000; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
+.canvas-shadow-wrapper canvas { display: block; max-width: 100%; max-height: 100%; }
 
 .video-timeline-dock {
   height: 150px;
