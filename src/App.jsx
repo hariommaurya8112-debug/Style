@@ -42,7 +42,6 @@ export default function App() {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   const videoInputRef = useRef(null);
-  const audioInputRef = useRef(null);
 
   const [activeTool, setActiveTool] = useState("project");
   const [studioMode, setStudioMode] = useState("graphic"); // "graphic" or "video"
@@ -86,7 +85,6 @@ export default function App() {
     const containerHeight = canvasContainerRef.current.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) return;
 
-    // Increased padding safely forces the canvas box to stay centered with clearance
     const padding = window.innerWidth <= 900 ? 50 : 40;
     const scale = Math.min((containerWidth - padding) / canvasSize.w, (containerHeight - padding) / canvasSize.h);
     
@@ -97,6 +95,7 @@ export default function App() {
       wrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
       wrap.style.transformOrigin = 'center center';
     }
+    
     canvasRef.current.calcOffset();
   }, [canvasSize.w, canvasSize.h]);
 
@@ -132,15 +131,31 @@ export default function App() {
       setCanvasObjects([...canvas.getObjects()]);
     };
 
+    const handleTextEditing = (e) => {
+      if (e.target && (e.target.type === 'i-text' || e.target.type === 'textbox')) {
+        setTimeout(() => {
+          if (canvasRef.current) {
+            canvasRef.current.calcOffset();
+            canvasRef.current.requestRenderAll();
+          }
+        }, 50);
+      }
+    };
+
     canvas.on("selection:created", updateSelection);
     canvas.on("selection:updated", updateSelection);
     canvas.on("selection:cleared", updateSelection);
     canvas.on("object:modified", () => { updateSelection(); saveHistory(); });
     canvas.on("object:added", updateSelection);
     canvas.on("object:removed", updateSelection);
+    canvas.on("text:editing:entered", handleTextEditing);
+    canvas.on("text:editing:exited", () => { updateSelection(); saveHistory(); });
 
     window.addEventListener('resize', resizeCanvas);
-    const timer = setTimeout(resizeCanvas, 150); 
+    const timer = setTimeout(() => {
+      resizeCanvas();
+      canvas.requestRenderAll();
+    }, 150); 
 
     return () => { 
       window.removeEventListener('resize', resizeCanvas); 
@@ -591,7 +606,7 @@ export default function App() {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow: hidden; width: 100vw; height: 100vh; position: fixed; }
+html, body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow: hidden; width: 100vw; height: 100vh; position: fixed; touch-action: manipulation; }
 button, select, input { font-family: inherit; }
 button { border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
@@ -676,10 +691,14 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
   transform: translate(-50%, -50%); 
   transform-origin: center center;
   overflow: hidden;
+  contain: layout style;
 }
 .canvas-shadow-wrapper .canvas-container {
   width: 100% !important;
   height: 100% !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
 }
 .canvas-shadow-wrapper canvas { 
   display: block; 
