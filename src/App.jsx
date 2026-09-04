@@ -86,14 +86,16 @@ export default function App() {
     const containerHeight = canvasContainerRef.current.clientHeight;
     if (containerWidth === 0 || containerHeight === 0) return;
 
-    const padding = 30;
-    const scale = Math.min((containerWidth - padding) / canvasSize.w, (containerHeight - padding) / canvasSize.h, 1);
+    // Increased padding safely forces the canvas box to stay centered with clearance
+    const padding = window.innerWidth <= 900 ? 50 : 40;
+    const scale = Math.min((containerWidth - padding) / canvasSize.w, (containerHeight - padding) / canvasSize.h);
     
     const wrap = document.querySelector('.canvas-shadow-wrapper');
     if (wrap) {
       wrap.style.width = `${canvasSize.w}px`;
       wrap.style.height = `${canvasSize.h}px`;
       wrap.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      wrap.style.transformOrigin = 'center center';
     }
     canvasRef.current.calcOffset();
   }, [canvasSize.w, canvasSize.h]);
@@ -328,82 +330,82 @@ export default function App() {
   const TopControlPanel = () => {
     return (
       <div className="top-multi-bar">
-        <div className="top-toolbar-row">
+        {/* ROW 1: Non-scrolling primary master actions */}
+        <div className="top-toolbar-row primary-bar-row">
           <div className="tb-section-group">
-            <button className="tb-btn" onClick={undo} disabled={historyIndex <= 0} title="Undo"><Undo2 size={15}/> Undo</button>
-            <button className="tb-btn" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo"><Redo2 size={15}/> Redo</button>
+            <button className="tb-btn" onClick={undo} disabled={historyIndex <= 0} title="Undo"><Undo2 size={14}/> Undo</button>
+            <button className="tb-btn" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo"><Redo2 size={14}/> Redo</button>
             <div className="tb-divider"/>
-            <button className="tb-btn" onClick={duplicateObject} title="Duplicate"><CopyPlus size={15}/> Duplicate</button>
-            <button className="tb-btn danger-text" onClick={deleteObject} title="Delete"><Trash2 size={15}/> Delete</button>
+            <button className="tb-btn" onClick={duplicateObject} title="Duplicate"><CopyPlus size={14}/> Dup</button>
+            <button className="tb-btn danger-text" onClick={deleteObject} title="Delete"><Trash2 size={14}/> Del</button>
           </div>
 
           <div className="tb-section-group">
-            <span className="tb-label">Studio Mode:</span>
             <div className="mode-switch-group">
               <button className={`mode-btn ${studioMode === 'graphic' ? 'active' : ''}`} onClick={() => {
                 setStudioMode('graphic');
                 setCanvasSize({ w: 1080, h: 1080 });
                 if (canvasRef.current) canvasRef.current.setDimensions({ width: 1080, height: 1080 });
-                showMsg("Graphic Design Mode");
-              }}><ImgIcon size={14}/> Graphic</button>
+                showMsg("Graphic Mode");
+              }}><ImgIcon size={13}/> Graphic</button>
               <button className={`mode-btn ${studioMode === 'video' ? 'active' : ''}`} onClick={() => {
                 setStudioMode('video');
                 setCanvasSize({ w: 1280, h: 720 });
                 if (canvasRef.current) canvasRef.current.setDimensions({ width: 1280, height: 720 });
-                showMsg("Video Editing Mode");
-              }}><Film size={14}/> Video</button>
+                showMsg("Video Mode");
+              }}><Film size={13}/> Video</button>
             </div>
-            <div className="tb-divider"/>
             <button className="tb-btn primary" onClick={() => { 
               const link = document.createElement('a'); 
-              link.download = 'creativa-design-export.png'; 
+              link.download = 'creativa-export.png'; 
               link.href = canvasRef.current.toDataURL({format:'png', quality: 1}); 
               link.click(); 
-              showMsg("Export Successful!"); 
-            }}><Download size={15}/> Export</button>
+              showMsg("Exported!"); 
+            }}><Download size={14}/> Export</button>
           </div>
         </div>
 
+        {/* ROW 2: Clean tool contextual drawer */}
         <div className="top-toolbar-row secondary-row custom-scrollbar">
           {activeTool === "project" && (
             <>
-              <button className="tb-btn primary" onClick={() => { setCanvasSize({w: 1200, h: 630}); if(canvasRef.current) canvasRef.current.setDimensions({width: 1200, height: 630}); showMsg("Resized to Social Banner"); }}><Maximize size={15}/> Social Banner (1200x630)</button>
-              <button className="tb-btn" onClick={() => setShowGrid(!showGrid)}><Grid size={15}/> {showGrid ? 'Hide Grid' : 'Show Grid'}</button>
-              <button className="tb-btn danger-text" onClick={() => { canvasRef.current.clear(); canvasRef.current.backgroundColor = canvasBg; saveHistory(); showMsg("Canvas Cleared"); }}><Trash2 size={15}/> Clear Canvas</button>
+              <button className="tb-btn primary" onClick={() => { setCanvasSize({w: 1200, h: 630}); if(canvasRef.current) canvasRef.current.setDimensions({width: 1200, height: 630}); showMsg("Resized Banner"); }}><Maximize size={14}/> Banner (1200x630)</button>
+              <button className="tb-btn" onClick={() => setShowGrid(!showGrid)}><Grid size={14}/> {showGrid ? 'Hide Grid' : 'Grid'}</button>
+              <button className="tb-btn danger-text" onClick={() => { canvasRef.current.clear(); canvasRef.current.backgroundColor = canvasBg; saveHistory(); showMsg("Cleared"); }}><Trash2 size={14}/> Clear</button>
             </>
           )}
 
           {activeTool === "text" && (
             <>
-              <button className="tb-btn primary" onClick={addText}><Type size={15}/> Add Text Box</button>
+              <button className="tb-btn primary" onClick={addText}><Type size={14}/> Add Text</button>
               <select className="tb-select" value={objProps.fontFamily} onChange={(e) => modifyObj("fontFamily", e.target.value)}>
                 {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
-              <div className="tb-group">
-                 <button className={`tb-icon-btn ${objProps.fontWeight === 'bold' ? 'active' : ''}`} onClick={() => modifyObj('fontWeight', objProps.fontWeight === 'bold' ? 'normal' : 'bold')}><Bold size={15}/></button>
-                 <button className={`tb-icon-btn ${objProps.fontStyle === 'italic' ? 'active' : ''}`} onClick={() => modifyObj('fontStyle', objProps.fontStyle === 'italic' ? 'normal' : 'italic')}><Italic size={15}/></button>
+              <div className="tb-group" style={{display:'flex', gap:2}}>
+                 <button className={`tb-icon-btn ${objProps.fontWeight === 'bold' ? 'active' : ''}`} onClick={() => modifyObj('fontWeight', objProps.fontWeight === 'bold' ? 'normal' : 'bold')}><Bold size={14}/></button>
+                 <button className={`tb-icon-btn ${objProps.fontStyle === 'italic' ? 'active' : ''}`} onClick={() => modifyObj('fontStyle', objProps.fontStyle === 'italic' ? 'normal' : 'italic')}><Italic size={14}/></button>
               </div>
-              <div className="tb-input-group"><label>Size</label><input type="number" value={objProps.fontSize} onChange={e=>modifyObj("fontSize", Number(e.target.value))} /></div>
-              <div className="tb-input-group"><label>Color</label><input type="color" value={objProps.fill} onChange={e=>modifyObj("fill", e.target.value)} /></div>
+              <div className="tb-input-group"><label>Sz</label><input type="number" value={objProps.fontSize} onChange={e=>modifyObj("fontSize", Number(e.target.value))} /></div>
+              <div className="tb-input-group"><label>Col</label><input type="color" value={objProps.fill} onChange={e=>modifyObj("fill", e.target.value)} /></div>
             </>
           )}
 
           {activeTool === "shapes" && (
             <>
               <span className="tb-label">Shapes:</span>
-              <button className="tb-btn" onClick={()=>addShape('rect')}><Square size={15}/> Rectangle</button>
-              <button className="tb-btn" onClick={()=>addShape('circle')}><Circle size={15}/> Circle</button>
-              <button className="tb-btn" onClick={()=>addShape('triangle')}><Triangle size={15}/> Triangle</button>
-              <button className="tb-btn" onClick={()=>addShape('star')}><Star size={15}/> Star</button>
+              <button className="tb-btn" onClick={()=>addShape('rect')}><Square size={14}/> Rect</button>
+              <button className="tb-btn" onClick={()=>addShape('circle')}><Circle size={14}/> Circle</button>
+              <button className="tb-btn" onClick={()=>addShape('triangle')}><Triangle size={14}/> Tri</button>
+              <button className="tb-btn" onClick={()=>addShape('star')}><Star size={14}/> Star</button>
             </>
           )}
 
           {activeTool === "video" && (
             <>
-              <button className="tb-btn primary" onClick={() => videoInputRef.current?.click()}><Video size={15}/> Import Video Clip</button>
+              <button className="tb-btn primary" onClick={() => videoInputRef.current?.click()}><Video size={14}/> Upload Video</button>
               <input type="file" ref={videoInputRef} style={{display:'none'}} accept="video/*" onChange={handleVideoUpload} />
               <button className="tb-btn" onClick={togglePlayback}>
-                {isPlaying ? <Pause size={15}/> : <Play size={15}/>} {isPlaying ? "Pause Preview" : "Play Preview"}
+                {isPlaying ? <Pause size={14}/> : <Play size={14}/>} {isPlaying ? "Pause" : "Play"}
               </button>
             </>
           )}
@@ -411,10 +413,10 @@ export default function App() {
           {activeTool === "timeline" && (
             <>
               <button className="tb-btn primary" onClick={togglePlayback}>
-                {isPlaying ? <Pause size={15}/> : <Play size={15}/>} {isPlaying ? "Pause" : "Play Track"}
+                {isPlaying ? <Pause size={14}/> : <Play size={14}/>} {isPlaying ? "Pause" : "Play"}
               </button>
-              <div className="tb-input-group" style={{width: 250}}>
-                <label>Scrubber</label>
+              <div className="tb-input-group" style={{width: 200}}>
+                <label>Time</label>
                 <input type="range" min="0" max={videoDuration || 15} step="0.05" value={currentTime} onChange={handleTimelineScrub} style={{width:'100%'}} />
               </div>
             </>
@@ -422,7 +424,7 @@ export default function App() {
 
           {activeTool === "uploads" && (
             <>
-              <button className="tb-btn primary" onClick={() => fileInputRef.current?.click()}><Upload size={15}/> Upload Local Image</button>
+              <button className="tb-btn primary" onClick={() => fileInputRef.current?.click()}><Upload size={14}/> Upload Image</button>
               <input type="file" ref={fileInputRef} style={{display:'none'}} accept="image/*" onChange={handleImageUpload} />
             </>
           )}
@@ -431,36 +433,36 @@ export default function App() {
             <>
               <button className="tb-btn primary" onClick={() => {
                 const obj = canvasRef.current?.getActiveObject();
-                if (!obj) { showMsg("Select an image first"); return; }
+                if (!obj) { showMsg("Select image first"); return; }
                 obj.filters.push(new fabric.Image.filters.RemoveColor({ color: '#ffffff', distance: 0.2 }));
                 obj.applyFilters();
                 canvasRef.current.requestRenderAll();
                 saveHistory();
-                showMsg("AI Background Removed!");
-              }}><Wand2 size={15}/> AI Background Remover</button>
+                showMsg("BG Removed!");
+              }}><Wand2 size={14}/> AI BG Remover</button>
               <button className="tb-btn" onClick={() => {
                 const obj = canvasRef.current?.getActiveObject();
-                if (!obj) { showMsg("Select an image first"); return; }
+                if (!obj) { showMsg("Select image first"); return; }
                 obj.filters.push(new fabric.Image.filters.Grayscale());
                 obj.applyFilters();
                 canvasRef.current.requestRenderAll();
                 saveHistory();
-                showMsg("Grayscale Applied");
-              }}><Sparkles size={15}/> Grayscale</button>
+                showMsg("Grayscale");
+              }}><Sparkles size={14}/> Grayscale</button>
             </>
           )}
 
           {activeTool === "background" && (
             <>
-              <div className="tb-input-group"><label>Background Color</label><input type="color" value={canvasBg} onChange={e => { setCanvasBg(e.target.value); canvasRef.current.backgroundColor = e.target.value; canvasRef.current.renderAll(); saveHistory(); }} /></div>
+              <div className="tb-input-group"><label>BG Color</label><input type="color" value={canvasBg} onChange={e => { setCanvasBg(e.target.value); canvasRef.current.backgroundColor = e.target.value; canvasRef.current.renderAll(); saveHistory(); }} /></div>
             </>
           )}
 
           {activeTool === "qrcode" && (
             <>
-              <div className="tb-input-group" style={{width: 200}}>
+              <div className="tb-input-group" style={{width: 160}}>
                 <label>URL</label>
-                <input type="text" value={qrText} onChange={e => setQrText(e.target.value)} style={{border:'none', background:'transparent', outline:'none', width:'100%', fontSize:12}} />
+                <input type="text" value={qrText} onChange={e => setQrText(e.target.value)} style={{border:'none', background:'transparent', outline:'none', width:'100%', fontSize:11}} />
               </div>
               <button className="tb-btn primary" onClick={() => {
                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrText)}`;
@@ -472,7 +474,7 @@ export default function App() {
                   saveHistory();
                   showMsg("QR Generated!");
                 });
-              }}><QrCode size={15}/> Generate QR</button>
+              }}><QrCode size={14}/> Generate</button>
             </>
           )}
 
@@ -483,8 +485,8 @@ export default function App() {
                   <div key={i} className={`tb-layer-chip ${selectedObject === obj ? 'active' : ''}`} onClick={() => { canvasRef.current.setActiveObject(obj); canvasRef.current.renderAll(); }}>
                      {obj.customName || obj.type}
                      <div style={{display:'flex', gap:2}}>
-                       <button className="tb-icon-btn small" onClick={(e)=>{e.stopPropagation(); canvasRef.current.bringForward(obj); setCanvasObjects([...canvasRef.current.getObjects()]);}}><ChevronUp size={12}/></button>
-                       <button className="tb-icon-btn small" onClick={(e)=>{e.stopPropagation(); canvasRef.current.sendBackwards(obj); setCanvasObjects([...canvasRef.current.getObjects()]);}}><ChevronDown size={12}/></button>
+                       <button className="tb-icon-btn small" onClick={(e)=>{e.stopPropagation(); canvasRef.current.bringForward(obj); setCanvasObjects([...canvasRef.current.getObjects()]);}}><ChevronUp size={10}/></button>
+                       <button className="tb-icon-btn small" onClick={(e)=>{e.stopPropagation(); canvasRef.current.sendBackwards(obj); setCanvasObjects([...canvasRef.current.getObjects()]);}}><ChevronDown size={10}/></button>
                      </div>
                   </div>
                ))}
@@ -492,7 +494,7 @@ export default function App() {
           )}
 
           {!["project", "text", "shapes", "video", "timeline", "uploads", "filters", "background", "qrcode", "layers"].includes(activeTool) && (
-            <span className="tb-label" style={{color: '#64748b'}}>Active Tool: <strong>{activeTool.toUpperCase()}</strong></span>
+            <span className="tb-label" style={{color: '#64748b'}}>Tool: <strong>{activeTool.toUpperCase()}</strong></span>
           )}
         </div>
       </div>
@@ -507,10 +509,10 @@ export default function App() {
         <header className="top-nav">
           <div className="logo">
             <div className="logo-icon">C</div>
-            <span className="logo-text">Creativa Pro Studio</span>
+            <span className="logo-text">Creativa Pro</span>
           </div>
           <div className="nav-actions">
-            <span className="workspace-status">{canvasSize.w} x {canvasSize.h}px ({studioMode === 'video' ? 'Video Mode' : 'Graphic Mode'})</span>
+            <span className="workspace-status">{canvasSize.w}x{canvasSize.h}px</span>
           </div>
         </header>
 
@@ -541,7 +543,7 @@ export default function App() {
                 <div className="timeline-toolbar-header">
                   <div className="timeline-controls-left">
                     <button className="tb-btn primary small-btn" onClick={togglePlayback}>
-                      {isPlaying ? <Pause size={13}/> : <Play size={13}/>} {isPlaying ? "Pause" : "Play"}
+                      {isPlaying ? <Pause size={12}/> : <Play size={12}/>} {isPlaying ? "Pause" : "Play"}
                     </button>
                     <span className="timecode-display">
                       {currentTime.toFixed(1)}s / {videoDuration.toFixed(1)}s
@@ -563,12 +565,11 @@ export default function App() {
                       </div>
                       <div className="track-clips-lane">
                         {track.clips.length === 0 ? (
-                          <span className="empty-lane-hint">Import clips via Video tool</span>
+                          <span className="empty-lane-hint">Empty track</span>
                         ) : (
                           track.clips.map(clip => (
                             <div key={clip.id} className="timeline-clip-block">
                               <span>{clip.name}</span>
-                              <span className="clip-duration-tag">{clip.duration ? `${clip.duration.toFixed(1)}s` : '30s'}</span>
                             </div>
                           ))
                         )}
@@ -581,7 +582,7 @@ export default function App() {
           </section>
         </div>
         
-        {toast && <div className="toast-msg"><Check size={16} /> {toast}</div>}
+        {toast && <div className="toast-msg"><Check size={14} /> {toast}</div>}
       </div>
     </>
   );
@@ -590,58 +591,58 @@ export default function App() {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden; width: 100vw; height: 100vh; position: fixed; }
+html, body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow: hidden; width: 100vw; height: 100vh; position: fixed; }
 button, select, input { font-family: inherit; }
-button { border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+button { border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
 .app-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; position: relative; overflow: hidden; }
-.custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+.custom-scrollbar::-webkit-scrollbar { height: 3px; width: 3px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-.top-nav { height: 48px; background: #0f172a; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 55; flex-shrink: 0;}
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 26px; height: 26px; border-radius: 6px; background: #5c4dff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;}
-.logo-text { font-size: 15px; font-weight: 700; color: #fff;}
-.workspace-status { font-size: 12px; color: #94a3b8; }
+.top-nav { height: 42px; background: #0f172a; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; z-index: 55; flex-shrink: 0;}
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-icon { width: 22px; height: 22px; border-radius: 4px; background: #5c4dff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px;}
+.logo-text { font-size: 13px; font-weight: 700; color: #fff;}
+.workspace-status { font-size: 11px; color: #94a3b8; }
 
-.top-multi-bar { display: flex; flex-direction: column; background: #fff; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; z-index: 45; }
-.top-toolbar-row { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #f1f5f9; gap: 10px; }
+.top-multi-bar { display: flex; flex-direction: column; background: #fff; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; z-index: 45; }
+.top-toolbar-row { height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #f1f5f9; gap: 6px; }
+.top-toolbar-row.primary-bar-row { overflow-x: auto; white-space: nowrap; }
 .top-toolbar-row.secondary-row { background: #f8fafc; overflow-x: auto; white-space: nowrap; justify-content: flex-start; }
 
-.tb-section-group { display: flex; align-items: center; gap: 8px; }
-.tb-btn { padding: 0 10px; height: 30px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; font-size: 12px; font-weight: 600; transition: 0.2s; white-space: nowrap;}
+.tb-section-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.tb-btn { padding: 0 8px; height: 26px; border-radius: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;}
 .tb-btn:hover:not(:disabled) { background: #e2e8f0; }
 .tb-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .tb-btn.active { background: #eef2ff; color: #5c4dff; border-color: #5c4dff; }
 .tb-btn.primary { background: #5c4dff; color: #fff; border-color: #5c4dff; }
 .tb-btn.danger-text { color: #ef4444; border-color: #fee2e2; background: #fef2f2; }
-.tb-btn.danger-text:hover { background: #fee2e2; }
-.small-btn { height: 26px; font-size: 11px; padding: 0 8px; }
+.small-btn { height: 22px; font-size: 10px; padding: 0 6px; }
 
-.mode-switch-group { display: flex; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px; gap: 2px; }
-.mode-btn { padding: 0 10px; height: 26px; border-radius: 4px; font-size: 11px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 4px; }
+.mode-switch-group { display: flex; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px; gap: 2px; }
+.mode-btn { padding: 0 8px; height: 22px; border-radius: 3px; font-size: 10px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 3px; }
 .mode-btn.active { background: #5c4dff; color: #fff; }
 
-.tb-icon-btn { width: 30px; height: 30px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; transition: 0.2s; }
-.tb-icon-btn:hover { background: #e2e8f0; }
-.tb-divider { width: 1px; height: 20px; background: #e2e8f0; flex-shrink: 0; margin: 0 4px; }
-.tb-input-group { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0 8px; height: 30px;}
-.tb-input-group label { font-size: 11px; font-weight: 600; color: #64748b; }
-.tb-input-group input[type="number"] { width: 40px; border: none; background: transparent; font-size: 12px; font-weight: 500; outline: none; }
-.tb-select { height: 30px; padding: 0 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px; outline: none; background: #fff;}
-.tb-label { font-size: 12px; font-weight: 600; color: #64748b; margin-right: 4px; display: flex; align-items: center; gap: 4px; }
+.tb-icon-btn { width: 26px; height: 26px; border-radius: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; }
+.tb-icon-btn.small { width: 18px; height: 18px; }
+.tb-divider { width: 1px; height: 16px; background: #e2e8f0; flex-shrink: 0; margin: 0 2px; }
+.tb-input-group { display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0 6px; height: 26px; flex-shrink: 0;}
+.tb-input-group label { font-size: 10px; font-weight: 600; color: #64748b; }
+.tb-input-group input[type="number"] { width: 34px; border: none; background: transparent; font-size: 11px; outline: none; }
+.tb-select { height: 26px; padding: 0 4px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 11px; outline: none; background: #fff; }
+.tb-label { font-size: 11px; font-weight: 600; color: #64748b; margin-right: 4px; display: flex; align-items: center; gap: 3px; }
 
 .main-body { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; height: 100%; }
 
 .primary-toolbar { 
-  width: 140px; 
+  width: 130px; 
   background: #fff; 
-  border-right: 1px solid #e5e7eb; 
+  border-right: 1px solid #e2e8f0; 
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 52px;
-  gap: 5px;
-  padding: 8px; 
+  grid-auto-rows: 48px;
+  gap: 4px;
+  padding: 6px; 
   z-index: 40; 
   overflow-y: auto; 
   flex-shrink: 0;
@@ -650,27 +651,42 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
   flex-direction: column; 
   height: 100%; 
   width: 100%; 
-  border-radius: 8px; 
+  border-radius: 6px; 
   color: #64748b; 
   font-size: 9px; 
   font-weight: 600; 
-  transition: 0.2s; 
   background: #f8fafc;
   border: 1px solid #f1f5f9;
-  flex-shrink: 0;
   padding: 2px;
 }
 .sidebar-btn:hover { background: #f1f5f9; color: #0f172a; }
 .sidebar-btn.active { background: #eef2ff; color: #5c4dff; border-color: #c7d2fe; }
-.tool-label { margin-top: 2px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tool-label { margin-top: 1px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-.workspace-container { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; position: relative; min-width: 0; }
-.canvas-scroll-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; }
-.canvas-shadow-wrapper { background: #000; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
-.canvas-shadow-wrapper canvas { display: block; max-width: 100%; max-height: 100%; }
+.workspace-container { flex: 1; display: flex; flex-direction: column; background: #f8fafc; overflow: hidden; position: relative; min-width: 0; }
+.canvas-scroll-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; height: 100%; padding: 20px; }
+
+.canvas-shadow-wrapper { 
+  background: transparent; 
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12); 
+  border-radius: 2px; 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  transform-origin: center center;
+  overflow: hidden;
+}
+.canvas-shadow-wrapper .canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+.canvas-shadow-wrapper canvas { 
+  display: block; 
+}
 
 .video-timeline-dock {
-  height: 150px;
+  height: 130px;
   background: #1e293b;
   border-top: 1px solid #334155;
   display: flex;
@@ -680,92 +696,90 @@ button { border: none; background: none; cursor: pointer; display: flex; align-i
   color: #fff;
 }
 .timeline-toolbar-header {
-  height: 36px;
+  height: 32px;
   background: #0f172a;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 15px;
+  padding: 0 10px;
   border-bottom: 1px solid #334155;
 }
-.timeline-controls-left { display: flex; align-items: center; gap: 12px; }
-.timecode-display { font-family: monospace; font-size: 12px; color: #38bdf8; }
-.timeline-controls-right { flex: 1; max-width: 500px; margin-left: 20px; }
+.timeline-controls-left { display: flex; align-items: center; gap: 8px; }
+.timecode-display { font-family: monospace; font-size: 11px; color: #38bdf8; }
+.timeline-controls-right { flex: 1; max-width: 400px; margin-left: 15px; }
 .timeline-global-scrubber { width: 100%; cursor: pointer; accent-color: #5c4dff; }
 
 .timeline-tracks-container {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 15px;
+  padding: 4px 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 .timeline-track-row {
-  height: 30px;
+  height: 26px;
   background: #0f172a;
-  border-radius: 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  gap: 10px;
+  padding: 0 6px;
+  gap: 8px;
   border: 1px solid #334155;
 }
 .track-label-badge {
-  width: 120px;
-  font-size: 11px;
+  width: 100px;
+  font-size: 10px;
   font-weight: 600;
   color: #94a3b8;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 .track-clips-lane {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
 }
-.empty-lane-hint { font-size: 11px; color: #64748b; font-style: italic; }
+.empty-lane-hint { font-size: 10px; color: #64748b; font-style: italic; }
 .timeline-clip-block {
   background: #5c4dff;
   color: white;
-  padding: 2px 10px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 3px;
+  font-size: 10px;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 22px;
+  height: 20px;
 }
-.clip-duration-tag { background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 3px; font-size: 9px; }
 
-.toast-msg { position: fixed; bottom: 170px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.toast-msg { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; z-index: 9999; box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
 
 @media (max-width: 900px) {
   .app-container { height: 100vh; overflow: hidden; }
-  .main-body { flex-direction: column; height: calc(100vh - 48px - 88px); }
+  .main-body { flex-direction: column; height: calc(100vh - 42px - 76px); }
   .primary-toolbar { 
     position: fixed; 
     bottom: 0; 
     left: 0; 
     width: 100%; 
-    height: 70px; 
+    height: 64px; 
     display: flex;
     grid-template-columns: none;
     flex-direction: row; 
     overflow-x: auto; 
     border-right: none; 
-    border-top: 1px solid #e5e7eb; 
-    padding: 5px 10px;
-    gap: 6px;
+    border-top: 1px solid #e2e8f0; 
+    padding: 4px 8px;
+    gap: 4px;
     background: #fff;
     z-index: 60;
   }
-  .sidebar-btn { flex: 0 0 50px; height: 55px; border-radius: 8px; }
-  .canvas-scroll-area { padding-bottom: 70px; }
+  .sidebar-btn { flex: 0 0 46px; height: 52px; border-radius: 6px; }
+  .canvas-scroll-area { padding-bottom: 74px; padding-top: 24px; }
 }
 `;
